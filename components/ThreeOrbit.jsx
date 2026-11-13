@@ -6,7 +6,13 @@ import * as THREE from 'three';
 export default function ThreeOrbit() {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
+  const resetRef = useRef(null);
+  const startAnimationRef = useRef(null);
+  const pausedRef = useRef(false);
+  const fallbackDragRef = useRef({ dragging: false, x: 0, y: 0, lastX: 0, lastY: 0 });
   const [fallback, setFallback] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [fallbackKey, setFallbackKey] = useState(0);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -43,11 +49,12 @@ export default function ThreeOrbit() {
 
     const root = new THREE.Group();
     scene.add(root);
-
     scene.add(new THREE.AmbientLight(0xffffff, 1.7));
+
     const keyLight = new THREE.PointLight(0xc5ff9c, 32, 12);
     keyLight.position.set(-2.5, 2.8, 4);
     scene.add(keyLight);
+
     const rimLight = new THREE.PointLight(0x35b76a, 24, 10);
     rimLight.position.set(2, -2.2, -1);
     scene.add(rimLight);
@@ -120,7 +127,7 @@ export default function ThreeOrbit() {
     const particles = new Float32Array(150 * 3);
     for (let i = 0; i < 150; i += 1) {
       const angle = (i / 150) * Math.PI * 2;
-      const radius = 2.3 + ((i * 37) % 100) / 100 * 0.65;
+      const radius = 2.3 + (((i * 37) % 100) / 100) * 0.65;
       particles[i * 3] = Math.cos(angle) * radius;
       particles[i * 3 + 1] = Math.sin(angle * 1.7) * 1.1;
       particles[i * 3 + 2] = Math.sin(angle) * radius * 0.4;
@@ -133,7 +140,14 @@ export default function ThreeOrbit() {
     );
     scene.add(particleField);
 
-    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let frameId;
+    let elapsed = 0;
+    let pointerX = 0;
+    let pointerY = 0;
+    let dragging = false;
+    let lastX = 0;
+    let lastY = 0;
+
     const resizeObserver = new ResizeObserver(() => {
       const { width, height } = container.getBoundingClientRect();
       if (!width || !height) return;
@@ -145,23 +159,46 @@ export default function ThreeOrbit() {
     });
     resizeObserver.observe(container);
 
-    let frameId;
-    let elapsed = 0;
-    let pointerX = 0;
-    let pointerY = 0;
+    const onPointerDown = (event) => {
+      dragging = true;
+      lastX = event.clientX;
+      lastY = event.clientY;
+      container.setPointerCapture(event.pointerId);
+    };
     const onPointerMove = (event) => {
-      const rect = container.getBoundingClientRect();
-      pointerX = ((event.clientX - rect.left) / rect.width - 0.5) * 0.28;
-      pointerY = ((event.clientY - rect.top) / rect.height - 0.5) * 0.2;
+      if (dragging) {
+        pointerX = THREE.MathUtils.clamp(pointerX + (event.clientX - lastX) * 0.008, -0.65, 0.65);
+        pointerY = THREE.MathUtils.clamp(pointerY + (event.clientY - lastY) * 0.008, -0.5, 0.5);
+      } else {
+        const rect = container.getBoundingClientRect();
+        pointerX = ((event.clientX - rect.left) / rect.width - 0.5) * 0.34;
+        pointerY = ((event.clientY - rect.top) / rect.height - 0.5) * 0.24;
+      }
+      lastX = event.clientX;
+      lastY = event.clientY;
+    };
+    const onPointerUp = (event) => {
+      dragging = false;
+      if (container.hasPointerCapture(event.pointerId)) container.releasePointerCapture(event.pointerId);
     };
     const onPointerLeave = () => {
-      pointerX = 0;
-      pointerY = 0;
+      if (!dragging) {
+        pointerX = 0;
+        pointerY = 0;
+      }
     };
+
+    container.addEventListener('pointerdown', onPointerDown);
     container.addEventListener('pointermove', onPointerMove, { passive: true });
+    container.addEventListener('pointerup', onPointerUp);
+    container.addEventListener('pointercancel', onPointerUp);
     container.addEventListener('pointerleave', onPointerLeave);
 
     const animate = () => {
+      if (pausedRef.current) {
+        renderer.render(scene, camera);
+        return;
+      }
       frameId = window.requestAnimationFrame(animate);
       elapsed += 0.008;
       root.rotation.y += (pointerX - root.rotation.y) * 0.025;
@@ -178,19 +215,46 @@ export default function ThreeOrbit() {
 
     const startAnimation = () => {
       window.cancelAnimationFrame(frameId);
-      if (motionQuery.matches) {
+      if (pausedRef.current) {
         renderer.render(scene, camera);
       } else {
-        animate();
+        frameId = window.requestAnimationFrame(animate);
       }
     };
+    startAnimationRef.current = startAnimation;
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const onMotionPreferenceChange = () => {
+      pausedRef.current = motionQuery.matches;
+      setPaused(motionQuery.matches);
+      startAnimation();
+    };
+
+    pausedRef.current = motionQuery.matches;
+    setPaused(motionQuery.matches);
+    resetRef.current = () => {
+      pointerX = 0;
+      pointerY = 0;
+      elapsed = 0;
+      root.rotation.set(0, 0, 0);
+      inner.rotation.set(0, 0, 0);
+      wire.rotation.set(0, 0, 0);
+      orbits.forEach(({ orbit }, index) => {
+        orbit.rotation.set(orbitSpecs[index].tilt, index * 0.72, 0);
+      });
+      renderer.render(scene, camera);
+    };
     startAnimation();
-    motionQuery.addEventListener('change', startAnimation);
+    motionQuery.addEventListener('change', onMotionPreferenceChange);
 
     return () => {
       window.cancelAnimationFrame(frameId);
-      motionQuery.removeEventListener('change', startAnimation);
+      resetRef.current = null;
+      startAnimationRef.current = null;
+      motionQuery.removeEventListener('change', onMotionPreferenceChange);
+      container.removeEventListener('pointerdown', onPointerDown);
       container.removeEventListener('pointermove', onPointerMove);
+      container.removeEventListener('pointerup', onPointerUp);
+      container.removeEventListener('pointercancel', onPointerUp);
       container.removeEventListener('pointerleave', onPointerLeave);
       resizeObserver.disconnect();
       scene.traverse((object) => {
@@ -204,20 +268,102 @@ export default function ThreeOrbit() {
     };
   }, []);
 
+  const toggleMotion = () => {
+    const nextPaused = !pausedRef.current;
+    pausedRef.current = nextPaused;
+    setPaused(nextPaused);
+    startAnimationRef.current?.();
+  };
+
+  const handlePointerDown = (event) => {
+    if (!fallback) return;
+    const drag = fallbackDragRef.current;
+    drag.dragging = true;
+    drag.lastX = event.clientX;
+    drag.lastY = event.clientY;
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handlePointerMove = (event) => {
+    if (!fallback) return;
+    const drag = fallbackDragRef.current;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    if (drag.dragging) {
+      drag.x = THREE.MathUtils.clamp(drag.x + (event.clientX - drag.lastX) * 0.28, -18, 18);
+      drag.y = THREE.MathUtils.clamp(drag.y + (event.clientY - drag.lastY) * -0.28, -18, 18);
+    } else {
+      drag.x = ((event.clientX - bounds.left) / bounds.width - 0.5) * 12;
+      drag.y = ((event.clientY - bounds.top) / bounds.height - 0.5) * -12;
+    }
+    drag.lastX = event.clientX;
+    drag.lastY = event.clientY;
+    event.currentTarget.style.setProperty('--scene-tilt-x', `${drag.x}deg`);
+    event.currentTarget.style.setProperty('--scene-tilt-y', `${drag.y}deg`);
+  };
+
+  const handlePointerUp = (event) => {
+    const drag = fallbackDragRef.current;
+    drag.dragging = false;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
+
+  const handlePointerLeave = (event) => {
+    const drag = fallbackDragRef.current;
+    if (drag.dragging) return;
+    drag.x = 0;
+    drag.y = 0;
+    event.currentTarget.style.setProperty('--scene-tilt-x', '0deg');
+    event.currentTarget.style.setProperty('--scene-tilt-y', '0deg');
+  };
+
+  const resetScene = () => {
+    resetRef.current?.();
+    const drag = fallbackDragRef.current;
+    drag.dragging = false;
+    drag.x = 0;
+    drag.y = 0;
+    containerRef.current?.style.setProperty('--scene-tilt-x', '0deg');
+    containerRef.current?.style.setProperty('--scene-tilt-y', '0deg');
+    setFallbackKey((key) => key + 1);
+  };
+
   return (
-    <div className={`hero__scene${fallback ? ' hero__scene--fallback' : ''}`} ref={containerRef} aria-hidden="true">
-      <canvas className="hero__canvas" ref={canvasRef} />
-      {fallback && (
-        <div className="hero__fallback">
-          <span className="hero__fallback-orbit hero__fallback-orbit--one" />
-          <span className="hero__fallback-orbit hero__fallback-orbit--two" />
-          <span className="hero__fallback-orbit hero__fallback-orbit--three" />
-          <span className="hero__fallback-core" />
+    <div className="hero__visual">
+      <div
+        className={`hero__scene${fallback ? ' hero__scene--fallback' : ''}${paused ? ' hero__scene--paused' : ''}`}
+        ref={containerRef}
+        role="img"
+        aria-label="Interactive three-dimensional orbital scene. Drag to rotate the model."
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        onPointerLeave={handlePointerLeave}
+      >
+        <canvas className="hero__canvas" ref={canvasRef} aria-hidden="true" />
+        {fallback && (
+          <div className="hero__fallback" key={fallbackKey} aria-hidden="true">
+            <span className="hero__fallback-orbit hero__fallback-orbit--one" />
+            <span className="hero__fallback-orbit hero__fallback-orbit--two" />
+            <span className="hero__fallback-orbit hero__fallback-orbit--three" />
+            <span className="hero__fallback-core" />
+          </div>
+        )}
+        <span className="hero__scene-label hero__scene-label--one" aria-hidden="true">BUILD</span>
+        <span className="hero__scene-label hero__scene-label--two" aria-hidden="true">CONNECT</span>
+        <span className="hero__scene-label hero__scene-label--three" aria-hidden="true">DELIVER</span>
+      </div>
+      <div className="hero__controls">
+        <span className="hero__hint">Drag the scene to explore</span>
+        <div className="hero__control-actions">
+          <button type="button" onClick={toggleMotion} aria-pressed={paused}>
+            {paused ? 'Resume motion' : 'Pause motion'}
+          </button>
+          <button type="button" onClick={resetScene}>Reset view</button>
         </div>
-      )}
-      <span className="hero__scene-label hero__scene-label--one">INTERFACE</span>
-      <span className="hero__scene-label hero__scene-label--two">SYSTEMS</span>
-      <span className="hero__scene-label hero__scene-label--three">DATA</span>
+      </div>
     </div>
   );
 }

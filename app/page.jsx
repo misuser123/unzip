@@ -101,28 +101,65 @@ export default function Page() {
       <main id="main">
         {/* HERO */}
         <section className="hero" id="top">
-          <div className="wrap hero__in">
-            <span className="tag" data-reveal>
-              Full-stack engineer · 3+ years building for the web
-            </span>
-            <h1 className="display" data-reveal style={{ '--d': '60ms' }}>
-              I build products that solve real problems.
-            </h1>
-            <p className="lede" data-reveal style={{ '--d': '120ms' }}>
-              I&apos;m Bharat Saini, a full-stack engineer who takes products from a clear problem to a dependable
-              release. I work across TypeScript, React, Next.js, Node.js and PostgreSQL—with a focus on performance,
-              workflow automation and maintainable systems.
-            </p>
-            <div className="actions actions--center" data-reveal style={{ '--d': '180ms' }}>
-              <a className="btn btn--lime" href={ME.resume} target="_blank" rel="noreferrer">
-                View résumé <span aria-hidden="true">↗</span>
-              </a>
-              <a className="ulink" href="#projects">
-                Explore selected work
-              </a>
+          <div className="wrap hero__layout">
+            <div className="hero__in">
+              <span className="tag" data-reveal>
+                Full-stack engineer · 3+ years building for the web
+              </span>
+              <h1 className="display hero__title" data-reveal style={{ '--d': '60ms' }}>
+                <span>Building for</span>
+                <span>the web.</span>
+              </h1>
+              <p className="lede" data-reveal style={{ '--d': '120ms' }}>
+                I&apos;m Bharat Saini, a full-stack engineer who takes products from a clear problem to a dependable
+                release. I work across TypeScript, React, Next.js, Node.js and PostgreSQL—with a focus on performance,
+                workflow automation and maintainable systems.
+              </p>
+              <div className="actions" data-reveal style={{ '--d': '180ms' }}>
+                <a className="btn btn--lime" href={ME.resume} target="_blank" rel="noreferrer">
+                  View résumé <span aria-hidden="true">↗</span>
+                </a>
+                <a className="ulink ulink--paper" href="#projects">
+                  Explore selected work
+                </a>
+              </div>
+            </div>
+            <ThreeOrbit />
+          </div>
+        </section>
+
+        {/* EXPERIENCE */}
+        <section className="band band--fog experience" id="experience">
+          <div className="wrap experience__layout">
+            <div className="experience__intro" data-reveal>
+              <p className="eyebrow">Experience</p>
+              <h2 className="h2">The work behind the craft.</h2>
+              <p className="body body--sm">A quick view of the teams and problems I&apos;ve worked with.</p>
+            </div>
+            <div className="stack">
+              {EXPERIENCE.map((e, i) => (
+                <article className="card" key={e.role + e.company} data-reveal style={{ '--d': `${i * 80}ms` }}>
+                  <header className="card__head">
+                    <div>
+                      <h3>{e.role}</h3>
+                      <p className="muted">{e.company}</p>
+                    </div>
+                    <div className="card__meta">
+                      {e.current && <span className="tag tag--dark">Current</span>}
+                      <span className="muted">{e.period}</span>
+                    </div>
+                  </header>
+                  {e.points.length > 0 && (
+                    <ul className="points">
+                      {e.points.map(p => (
+                        <li key={p}>{p}</li>
+                      ))}
+                    </ul>
+                  )}
+                </article>
+              ))}
             </div>
           </div>
-          <ThreeOrbit />
         </section>
 
         {/* TECH GRID */}
@@ -160,36 +197,6 @@ export default function Page() {
                 </li>
               ))}
             </ul>
-          </div>
-        </section>
-
-        {/* EXPERIENCE */}
-        <section className="band band--fog" id="experience">
-          <div className="wrap">
-            <Opener>Experience &amp; measurable impact.</Opener>
-            <div className="stack">
-              {EXPERIENCE.map((e, i) => (
-                <article className="card" key={e.role + e.company} data-reveal style={{ '--d': `${i * 80}ms` }}>
-                  <header className="card__head">
-                    <div>
-                      <h3>{e.role}</h3>
-                      <p className="muted">{e.company}</p>
-                    </div>
-                    <div className="card__meta">
-                      {e.current && <span className="tag tag--dark">Current</span>}
-                      <span className="muted">{e.period}</span>
-                    </div>
-                  </header>
-                  {e.points.length > 0 && (
-                    <ul className="points">
-                      {e.points.map(p => (
-                        <li key={p}>{p}</li>
-                      ))}
-                    </ul>
-                  )}
-                </article>
-              ))}
-            </div>
           </div>
         </section>
 
