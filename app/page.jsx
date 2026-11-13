@@ -153,21 +153,22 @@ export default function Page() {
         <section className="hero" id="top">
           <div className="wrap hero__in">
             <span className="tag" data-reveal>
-              Software Developer · Cyfuture, Noida
+              Full-stack engineer · 3+ years building for the web
             </span>
             <h1 className="display" data-reveal style={{ '--d': '60ms' }}>
-              Full-stack products built to last.
+              I build products that solve real problems.
             </h1>
             <p className="lede" data-reveal style={{ '--d': '120ms' }}>
-              I&rsquo;m Bharat Saini. I turn business requirements into fast, well-tested, user-focused software with
-              TypeScript, Next.js, Node.js and PostgreSQL.
+              I&apos;m Bharat Saini, a full-stack engineer who takes products from a clear problem to a dependable
+              release. I work across TypeScript, React, Next.js, Node.js and PostgreSQL—with a focus on performance,
+              workflow automation and maintainable systems.
             </p>
             <div className="actions actions--center" data-reveal style={{ '--d': '180ms' }}>
-              <a className="btn btn--lime" href="#projects">
-                See my projects
+              <a className="btn btn--lime" href={ME.resume} target="_blank" rel="noreferrer">
+                View résumé <span aria-hidden="true">↗</span>
               </a>
-              <a className="ulink" href={`mailto:${ME.email}`}>
-                Get in touch
+              <a className="ulink" href="#projects">
+                Explore selected work
               </a>
             </div>
           </div>
@@ -196,7 +197,7 @@ export default function Page() {
         {/* ABOUT */}
         <section className="band" id="about">
           <div className="wrap">
-            <Opener>Engineer first. Curious by default.</Opener>
+            <Opener>How I make an impact.</Opener>
             <p className="body" data-reveal>
               {ME.summary}
             </p>
@@ -215,7 +216,7 @@ export default function Page() {
         {/* EXPERIENCE */}
         <section className="band band--fog" id="experience">
           <div className="wrap">
-            <Opener>Where I&rsquo;ve shipped.</Opener>
+            <Opener>Experience &amp; measurable impact.</Opener>
             <div className="stack">
               {EXPERIENCE.map((e, i) => (
                 <article className="card" key={e.role + e.company} data-reveal style={{ '--d': `${i * 80}ms` }}>
@@ -245,7 +246,7 @@ export default function Page() {
         {/* PROJECTS (dark) */}
         <section className="band band--dark" id="projects">
           <div className="wrap">
-            <Opener dark>Built. Shipped. Live.</Opener>
+            <Opener dark>Selected work, with the details.</Opener>
 
             <article className="big" data-reveal>
               <div className="big__text">
@@ -263,7 +264,7 @@ export default function Page() {
               <div className="inset" role="group" aria-label="Example workflow run">
                 <div className="inset__head">
                   <strong>Execution history</strong>
-                  <span className="muted">Example run</span>
+                  <span className="muted">Illustrative workflow</span>
                 </div>
                 <ul className="run">
                   {RUN.map((r, i) => (
@@ -376,10 +377,6 @@ export default function Page() {
         </div>
       </footer>
 
-      <a className="badge-float" href={ME.resume} target="_blank" rel="noreferrer">
-        <span className="badge-float__mark">BS</span>
-        <span>Get my résumé</span>
-      </a>
     </>
   );
 }
