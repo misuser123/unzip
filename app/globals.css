@@ -362,10 +362,122 @@ h3 {
   position: relative;
   z-index: 1;
 }
-.hero__art {
-  display: block;
+.hero__scene {
+  position: relative;
+  isolation: isolate;
   width: min(760px, 100%);
-  margin: clamp(32px, 5vw, 56px) auto 0;
+  height: clamp(280px, 38vw, 360px);
+  margin: clamp(28px, 4vw, 48px) auto 0;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 48%, rgba(226, 246, 213, 0.8), rgba(255, 255, 255, 0) 62%);
+}
+.hero__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.hero__scene-label {
+  position: absolute;
+  z-index: 1;
+  padding: 7px 11px;
+  border: 1px solid rgba(22, 51, 0, 0.12);
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--forest);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  pointer-events: none;
+}
+.hero__scene-label--one {
+  top: 20%;
+  left: 9%;
+}
+.hero__scene-label--two {
+  top: 35%;
+  right: 7%;
+}
+.hero__scene-label--three {
+  right: 16%;
+  bottom: 12%;
+}
+.hero__fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.hero__fallback-orbit {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 270px;
+  height: 116px;
+  border: 1px solid rgba(22, 51, 0, 0.28);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) perspective(700px) rotateX(var(--tilt));
+  animation: orbit-drift var(--speed) linear infinite;
+}
+.hero__fallback-orbit::after {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 11px;
+  height: 11px;
+  border: 2px solid var(--paper);
+  border-radius: 50%;
+  background: var(--forest);
+  box-shadow: 0 0 16px rgba(22, 51, 0, 0.24);
+  content: '';
+  transform: translate(-50%, -50%);
+}
+.hero__fallback-orbit--one {
+  --tilt: 58deg;
+  --speed: 15s;
+}
+.hero__fallback-orbit--two {
+  --tilt: -64deg;
+  --speed: 21s;
+  width: 350px;
+  height: 142px;
+  border-color: rgba(5, 77, 40, 0.2);
+  animation-direction: reverse;
+}
+.hero__fallback-orbit--two::after {
+  background: var(--lime);
+}
+.hero__fallback-orbit--three {
+  --tilt: 76deg;
+  --speed: 27s;
+  width: 220px;
+  height: 94px;
+  border-color: rgba(5, 77, 40, 0.18);
+}
+.hero__fallback-orbit--three::after {
+  width: 8px;
+  height: 8px;
+  background: #56bf77;
+}
+.hero__fallback-core {
+  width: 94px;
+  height: 94px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #d6ffb3, #9fe870 35%, #337744 74%, #163300);
+  box-shadow: 0 0 40px rgba(159, 232, 112, 0.52), inset -8px -12px 22px rgba(14, 15, 12, 0.28);
+  animation: core-breathe 4s ease-in-out infinite;
+}
+@keyframes orbit-drift {
+  to {
+    transform: translate(-50%, -50%) perspective(700px) rotateX(var(--tilt)) rotateZ(360deg);
+  }
+}
+@keyframes core-breathe {
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 58px rgba(159, 232, 112, 0.66), inset -8px -12px 22px rgba(14, 15, 12, 0.28);
+  }
 }
 
 /* ---------- tech grid ---------- */
@@ -820,6 +932,12 @@ h3 {
   .hero__chips {
     display: none;
   }
+  .hero__fallback-orbit--two {
+    width: 290px;
+  }
+  .hero__fallback-orbit--one {
+    width: 220px;
+  }
   .badge-float {
     display: none;
   }
@@ -848,7 +966,9 @@ h3 {
     transform: none;
     transition: none;
   }
-  .chips li {
+  .chips li,
+  .hero__fallback-orbit,
+  .hero__fallback-core {
     animation: none;
   }
 }

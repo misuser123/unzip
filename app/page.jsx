@@ -1,6 +1,7 @@
 import Nav from '../components/Nav';
 import RevealInit from '../components/RevealInit';
 import SkillTabs from '../components/SkillTabs';
+import ThreeOrbit from '../components/ThreeOrbit';
 import { ME, TECH, FEATURES, EXPERIENCE, AUTOMIQ, OTHER_PROJECTS, SKILLS, EDUCATION } from './data';
 
 // Illustrative run for the Automiq card
@@ -42,57 +43,6 @@ function Icon({ name }) {
       aria-hidden="true"
     >
       {ICONS[name]}
-    </svg>
-  );
-}
-
-// Flat illustration: a stack of three "coins" — UI, API, DB — breaking the hero's lower edge.
-function HeroArt() {
-  const disc = (y, side, top, label) => (
-    <g key={label}>
-      <path d={`M120 ${y} V${y + 44} A200 52 0 0 0 520 ${y + 44} V${y} Z`} fill={side} />
-      <ellipse cx="320" cy={y} rx="200" ry="52" fill={top} />
-      <text
-        x="320"
-        y={y + 62}
-        textAnchor="middle"
-        fontFamily="Inter, system-ui, sans-serif"
-        fontWeight="900"
-        fontSize="22"
-        letterSpacing="3"
-        fill="#ffffff"
-      >
-        {label}
-      </text>
-    </g>
-  );
-  const chip = (x, y, w, text) => (
-    <g key={text}>
-      <rect x={x} y={y} width={w} height="34" rx="17" fill="#e8ebe6" />
-      <text
-        x={x + w / 2}
-        y={y + 22}
-        textAnchor="middle"
-        fontFamily="Inter, system-ui, sans-serif"
-        fontWeight="600"
-        fontSize="14"
-        fill="#163300"
-      >
-        {text}
-      </text>
-    </g>
-  );
-  return (
-    <svg className="hero__art" viewBox="0 0 640 300" role="img" aria-label="Illustration: a stack of three discs labelled UI, API and DB">
-      {disc(232, '#163300', '#054d28', 'DB')}
-      {disc(162, '#054d28', '#163300', 'API')}
-      {disc(92, '#163300', '#e2f6d5', 'UI')}
-      <g className="hero__chips">
-        {chip(6, 70, 96, 'Next.js')}
-        {chip(14, 176, 100, 'TypeScript')}
-        {chip(534, 40, 100, 'Node.js')}
-        {chip(522, 150, 112, 'PostgreSQL')}
-      </g>
     </svg>
   );
 }
@@ -172,7 +122,7 @@ export default function Page() {
               </a>
             </div>
           </div>
-          <HeroArt />
+          <ThreeOrbit />
         </section>
 
         {/* TECH GRID */}
